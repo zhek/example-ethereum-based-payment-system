@@ -1,0 +1,211 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Ethereum Payment System</title>
+
+    <style>
+
+    .main_section {
+      padding: 10px;
+      border:1px dotted #555555;
+      margin-bottom: 10px;
+    }
+
+    .message {
+      padding:4px 0px;
+    }
+
+    .edit {
+      padding:4px 0px;
+    }
+
+    .section_title {
+      padding:4px 0px;
+      margin-top: 4px;
+      margin-bottom: 4px;
+    }
+
+    .myedit {
+      width: 200px;
+    	border-radius:3px;
+    	border:1px solid #ffaa22;
+    	padding:4px 10px;
+    }
+
+    .mybutton {
+      width: 40px;
+      text-align: center;
+    	background-color:#ffec64;
+    	border-radius:3px;
+    	border:1px solid #ffaa22;
+    	display:inline-block;
+    	cursor:pointer;
+    	color:#333333;
+    	padding:4px 10px;
+    }
+
+    .mybutton:hover {
+    	background-color:#ffab23;
+    }
+
+    .mybutton:active {
+    	position:relative;
+    	top:1px;
+    }
+
+
+    </style>
+
+  </head>
+
+  <body>
+
+    <div class="main_section">
+      <h3 class="section_title">Info</h3>
+
+      <div id="message_balance" class="message"></div>
+      <div id="message_owner" class="message"></div>
+
+    </div>
+
+    <div class="main_section">
+      <h3 class="section_title">Output money</h3>
+
+      <div class="edit"><input type="text" class="myedit" id="edit_adress" placeholder="adress"></div>
+      <div class="edit"><input type="text" class="myedit" id="edit_value" placeholder="value (ETH)"></div>
+
+      <div id="button_output" class="mybutton">output</div>
+      <div id="message_output" class="message"></div>
+
+      <script>
+
+        //вывод денег
+        //-----------------------------------------------------------------
+
+        var button_output = document.querySelector('#button_output');
+
+        button_output.addEventListener('click', function() {
+          var pay_value = web3.toWei(parseFloat(document.getElementById("edit_value").value), 'ether')
+          var to_adress = document.getElementById("edit_adress").value;
+          var user_adress = web3.eth.accounts[0];
+
+          if (!web3.isAddress(user_adress)) {
+            write_wessage("#message_output", "error: MetaMask not open");
+            return;
+          }
+
+          if (!web3.isAddress(to_adress)) {
+            write_wessage("#message_output", "error: adress not valid");
+            return;
+          }
+
+          if (pay_value==0) {
+            write_wessage("#message_output", "error: volume 0");
+            return;
+          }
+
+          contract.outputMoney(
+            to_adress,
+            pay_value,
+            {from: user_adress, gasPrice: 41000000000},
+            function (err, transaction_hash) {
+              if (err) {
+                write_wessage("#message_output", "error");
+                console.log(err);
+              } else {
+                write_wessage("#message_output", "transaction hash: "+transaction_hash);
+              }
+          });
+
+        });
+
+      </script>
+
+    </div>
+
+    <div class="main_section">
+      <h3 class="section_title">Revert order</h3>
+
+      <div class="edit"><input type="text" class="myedit" id="edit_id" placeholder="id"></div>
+
+      <div id="button_revert" class="mybutton">revert</div>
+      <div id="message_revert" class="message"></div>
+
+      <script>
+
+        //вывод денег
+        //-----------------------------------------------------------------
+
+        var button_revert = document.querySelector('#button_revert');
+
+        button_revert.addEventListener('click', function() {
+          var pay_id = document.getElementById("edit_id").value;
+          var user_adress = web3.eth.accounts[0];
+
+          if (!web3.isAddress(user_adress)) {
+            write_wessage("#message_revert", "error: MetaMask not open");
+            return;
+          }
+
+          if (pay_id.length==0) {
+            write_wessage("#message_revert", "error: not id");
+            return;
+          }
+
+          contract.revertOrder(
+            pay_id,
+            {from: user_adress, gasPrice: 41000000000},
+            function (err, transaction_hash) {
+              if (err) {
+                write_wessage("#message_revert", "error");
+                console.log(err);
+              } else {
+                write_wessage("#message_revert", "transaction hash: "+transaction_hash);
+              }
+          });
+
+        });
+
+      </script>
+
+    </div>
+
+  </body>
+
+<script>
+
+function write_wessage(element, message) {
+  document.querySelector(element).innerHTML = message;
+}
+
+
+if (typeof web3 === 'undefined') {
+  document.getElementsByTagName("body")[0].innerHTML = 'You need to install MetaMask';
+} else {
+  //инициализация контракта
+  var contract_adress='0x3b4a22858093B9942514eE42eD1B4BF177632ba3';
+
+  var abi=[ { "constant": true, "inputs": [], "name": "owner", "outputs": [ { "name": "", "type": "address" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [ { "name": "", "type": "uint256" } ], "name": "orders", "outputs": [ { "name": "payer", "type": "address" }, { "name": "value", "type": "uint256" }, { "name": "revert", "type": "bool" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "anonymous": false, "inputs": [ { "indexed": true, "name": "previousOwner", "type": "address" }, { "indexed": true, "name": "newOwner", "type": "address" } ], "name": "OwnershipTransferred", "type": "event" }, { "anonymous": false, "inputs": [ { "indexed": true, "name": "id", "type": "uint256" }, { "indexed": false, "name": "payer", "type": "address" }, { "indexed": false, "name": "value", "type": "uint256" } ], "name": "PaymentOrder", "type": "event" }, { "anonymous": false, "inputs": [ { "indexed": true, "name": "id", "type": "uint256" }, { "indexed": false, "name": "payer", "type": "address" }, { "indexed": false, "name": "value", "type": "uint256" } ], "name": "RevertOrder", "type": "event" }, { "constant": false, "inputs": [ { "name": "_to", "type": "address" }, { "name": "_value", "type": "uint256" } ], "name": "outputMoney", "outputs": [ { "name": "", "type": "bool" } ], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [ { "name": "_id", "type": "uint256" } ], "name": "paymentOrder", "outputs": [ { "name": "", "type": "bool" } ], "payable": true, "stateMutability": "payable", "type": "function" }, { "constant": false, "inputs": [ { "name": "_id", "type": "uint256" } ], "name": "revertOrder", "outputs": [ { "name": "", "type": "bool" } ], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [ { "name": "newOwner", "type": "address" } ], "name": "transferOwnership", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "payable": true, "stateMutability": "payable", "type": "fallback" } ];
+
+  var contract = web3.eth.contract(abi).at(contract_adress);
+
+  //получаем баланс
+  web3.eth.getBalance(contract_adress.toString(), function (err, result) {
+    write_wessage("#message_balance", "contract balance: "+web3.fromWei(result, 'ether')+" ETH");
+  });
+
+  //получаем owner
+  contract.owner(function(err, data) {
+    if (err) {
+      write_wessage("#message_owner", "error");
+    } else {
+      write_wessage("#message_owner", "owner: "+data);
+    }
+  });
+
+}
+
+
+</script>
+
+</html>

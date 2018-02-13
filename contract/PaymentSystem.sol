@@ -54,11 +54,6 @@ contract PaymentSystem is Ownable {
     //база ордеров
     mapping(uint256 => order) public orders;
 
-    //возврат денег при попытке отправить деньги на контракт
-    function () public payable {
-        revert();
-    }
-
     event PaymentOrder(uint256 indexed id, address payer, uint256 value);
 
     //оплата ордера

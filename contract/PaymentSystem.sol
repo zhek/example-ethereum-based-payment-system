@@ -1,46 +1,67 @@
-pragma solidity ^0.4.18;
-//version:4
+pragma solidity ^0.4.25;
+//version:5
 
 /**
  * @title Ownable
  * @dev The Ownable contract has an owner address, and provides basic authorization control
  * functions, this simplifies the implementation of "user permissions".
  */
+
 contract Ownable {
-  address public owner;
+  address private _owner;
 
-
-  event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
-
+  event OwnershipTransferred(
+    address indexed previousOwner,
+    address indexed newOwner
+  );
 
   /**
    * @dev The Ownable constructor sets the original `owner` of the contract to the sender
    * account.
    */
-  function Ownable() public {
-    owner = msg.sender;
+  constructor() public {
+    _owner = msg.sender;
   }
 
+  /**
+   * @return the address of the owner.
+   */
+  function owner() public view returns(address) {
+    return _owner;
+  }
 
   /**
    * @dev Throws if called by any account other than the owner.
    */
   modifier onlyOwner() {
-    require(msg.sender == owner);
+    require(isOwner());
     _;
   }
 
+  /**
+   * @return true if `msg.sender` is the owner of the contract.
+   */
+  function isOwner() public view returns(bool) {
+    return msg.sender == _owner;
+  }
 
   /**
    * @dev Allows the current owner to transfer control of the contract to a newOwner.
    * @param newOwner The address to transfer ownership to.
    */
-  function transferOwnership(address newOwner) onlyOwner public {
-    require(newOwner != address(0));
-    OwnershipTransferred(owner, newOwner);
-    owner = newOwner;
+  function transferOwnership(address newOwner) public onlyOwner {
+    _transferOwnership(newOwner);
   }
 
+  /**
+   * @dev Transfers control of the contract to a newOwner.
+   * @param newOwner The address to transfer ownership to.
+   */
+  function _transferOwnership(address newOwner) internal {
+    require(newOwner != address(0));
+    emit OwnershipTransferred(_owner, newOwner);
+    _owner = newOwner;
+  }
 }
 
 contract PaymentSystem is Ownable {
@@ -63,14 +84,15 @@ contract PaymentSystem is Ownable {
 
     //оплата ордера
     function paymentOrder(uint256 _id) public payable returns(bool) {
-        require(orders[_id].value==0 && msg.value>0);
+        require(orders[_id].value==0, "id used");
+        require(msg.value>0, "no money");
 
         orders[_id].payer=msg.sender;
         orders[_id].value=msg.value;
         orders[_id].revert=false;
 
         //создать евент
-        PaymentOrder(_id, msg.sender, msg.value);
+        emit PaymentOrder(_id, msg.sender, msg.value);
 
         return true;
     }
@@ -79,21 +101,23 @@ contract PaymentSystem is Ownable {
 
     //возврат платежа
     function revertOrder(uint256 _id) public onlyOwner returns(bool)  {
-        require(orders[_id].value>0 && orders[_id].revert==false);
+        require(orders[_id].value>0, "order not used"); 
+        require(orders[_id].revert==false, "order revert");
 
         orders[_id].revert=true;
-        orders[_id].payer.transfer(orders[_id].value);
-
-        RevertOrder(_id, orders[_id].payer, orders[_id].value);
+        address(orders[_id].payer).transfer(orders[_id].value);
+        
+        //создать евент
+        emit RevertOrder(_id, orders[_id].payer, orders[_id].value);
 
         return true;
     }
 
     //вывод денег администратором
     function outputMoney(address _from, uint256 _value) public onlyOwner returns(bool) {
-        require(this.balance>=_value);
+        require(address(this).balance>=_value);
 
-        _from.transfer(_value);
+        address(_from).transfer(_value);
 
         return true;
     }

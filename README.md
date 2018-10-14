@@ -1,3 +1,5 @@
 # Example Ethereum based payment system
 
-Contract Address [0x3b4a22858093B9942514eE42eD1B4BF177632ba3](https://rinkeby.etherscan.io/address/0x3b4a22858093b9942514ee42ed1b4bf177632ba3)
+Смарт-контракт на rinkeby.etherscan.io [0xC11F680940e90d9f8E91920d048697C71A88ECbF](https://rinkeby.etherscan.io/address/0xc11f680940e90d9f8e91920d048697c71a88ecbf)
+
+[Описание работы платёжной системы](https://habr.com/post/348876/)

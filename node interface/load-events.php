@@ -8,7 +8,7 @@ $rate=0.000000000000000001;
 $ethereum = new Ethereum('192.168.56.1', 8545);
 
 //создаём новый фильтр
-$filter = new Ethereum_Filter('0x0', 'latest', '0x3b4a22858093B9942514eE42eD1B4BF177632ba3', []);
+$filter = new Ethereum_Filter('0x0', 'latest', '0xC11F680940e90d9f8E91920d048697C71A88ECbF', []);
 
 //отправляем фильтр в ноду
 $result_filter=$ethereum->eth_newFilter($filter);

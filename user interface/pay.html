@@ -103,7 +103,7 @@
 
           contract.paymentOrder(
             pay_id,
-            {from: user_adress, value: pay_value, gasPrice: 41000000000},
+            {from: user_adress, value: pay_value},
             function (err, transaction_hash) {
               if (err) {
                 write_wessage("#message_pay", "error");
@@ -127,10 +127,27 @@ function write_wessage(element, message) {
   document.querySelector(element).innerHTML = message;
 }
 
+//инициализация web3
+window.addEventListener('load', async () => {
+    if (window.ethereum) {
+        window.web3 = new Web3(ethereum);
+        try {
+            await ethereum.enable();
+        } catch (error) {
+            document.getElementsByTagName("body")[0].innerHTML = 'Grant permission MetaMask';
+        }
+    }
+
+    else if (window.web3) {
+        window.web3 = new Web3(web3.currentProvider);
+    }
+});
 
 if (typeof web3 === 'undefined') {
   document.getElementsByTagName("body")[0].innerHTML = 'You need to install MetaMask';
+
 } else {
+
   //инициализация контракта
   var contract_adress='0xC11F680940e90d9f8E91920d048697C71A88ECbF';
 
@@ -138,7 +155,6 @@ if (typeof web3 === 'undefined') {
 
   var contract = web3.eth.contract(abi).at(contract_adress);
 }
-
 
 </script>
 

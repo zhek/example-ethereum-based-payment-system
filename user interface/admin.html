@@ -112,7 +112,7 @@
           contract.outputMoney(
             to_adress,
             pay_value,
-            {from: user_adress, gasPrice: 41000000000},
+            {from: user_adress},
             function (err, transaction_hash) {
               if (err) {
                 write_wessage("#message_output", "error");
@@ -164,7 +164,7 @@
 
           contract.revertOrder(
             pay_id,
-            {from: user_adress, gasPrice: 41000000000},
+            {from: user_adress},
             function (err, transaction_hash) {
               if (err) {
                 write_wessage("#message_revert", "error");
@@ -189,14 +189,33 @@ function write_wessage(element, message) {
 }
 
 
+//инициализация web3
+window.addEventListener('load', async () => {
+    if (window.ethereum) {
+        window.web3 = new Web3(ethereum);
+        try {
+            await ethereum.enable();
+        } catch (error) {
+            document.getElementsByTagName("body")[0].innerHTML = 'Grant permission MetaMask';
+        }
+    }
+
+    else if (window.web3) {
+        window.web3 = new Web3(web3.currentProvider);
+    }
+});
+
 if (typeof web3 === 'undefined') {
   document.getElementsByTagName("body")[0].innerHTML = 'You need to install MetaMask';
+
 } else {
+
   //инициализация контракта
   var contract_adress='0xC11F680940e90d9f8E91920d048697C71A88ECbF';
 
   var abi=[{"constant":false,"inputs":[{"name":"_id","type":"uint256"}],"name":"paymentOrder","outputs":[{"name":"","type":"bool"}],"payable":true,"stateMutability":"payable","type":"function"},{"constant":false,"inputs":[{"name":"_id","type":"uint256"}],"name":"revertOrder","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_from","type":"address"},{"name":"_value","type":"uint256"}],"name":"outputMoney","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"isOwner","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"orders","outputs":[{"name":"payer","type":"address"},{"name":"value","type":"uint256"},{"name":"revert","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"payable":true,"stateMutability":"payable","type":"fallback"},{"anonymous":false,"inputs":[{"indexed":true,"name":"id","type":"uint256"},{"indexed":false,"name":"payer","type":"address"},{"indexed":false,"name":"value","type":"uint256"}],"name":"PaymentOrder","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"id","type":"uint256"},{"indexed":false,"name":"payer","type":"address"},{"indexed":false,"name":"value","type":"uint256"}],"name":"RevertOrder","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"previousOwner","type":"address"},{"indexed":true,"name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"}];
 
+  var contract = web3.eth.contract(abi).at(contract_adress);
   var contract = web3.eth.contract(abi).at(contract_adress);
 
   //получаем баланс
